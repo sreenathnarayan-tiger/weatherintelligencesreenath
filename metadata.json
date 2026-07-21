@@ -1,0 +1,6 @@
+{
+  "name": "Weather Intelligence",
+  "description": "A sophisticated weather companion featuring real-time city geocoding, current conditions, 7-day forecast analytics, and AI-powered recommendations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
