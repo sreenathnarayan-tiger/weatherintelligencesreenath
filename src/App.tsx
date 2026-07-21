@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Sparkles, CloudSun, MapPin, Loader2, RefreshCw, HelpCircle, Thermometer, Wind, Compass } from "lucide-react";
 import { City, WeatherDataState, CurrentWeather, ForecastDay } from "./types";
 import { getWeatherCondition } from "./utils/weatherUtils";
+import { generateLocalRecommendations } from "./utils/localRecommendations";
 import CitySearch from "./components/CitySearch";
 import CurrentDisplay from "./components/CurrentDisplay";
 import ForecastDisplay from "./components/ForecastDisplay";
@@ -78,51 +79,36 @@ export default function App() {
       };
       setWeatherData(initialState);
 
-      // Trigger server-side AI planning recommendations asynchronously
-      fetchRecommendations(city, currentMapped, dailyMapped);
+      // Trigger local planning intelligence computation with a tiny visual delay for high-tech feeling
+      setTimeout(() => {
+        try {
+          const localRecs = generateLocalRecommendations(city, currentMapped, dailyMapped);
+          setWeatherData((prev) => {
+            if (!prev || prev.city.id !== city.id) return prev;
+            return {
+              ...prev,
+              recommendations: localRecs,
+              loadingRecommendations: false,
+            };
+          });
+        } catch (error: any) {
+          console.error("Local recommendation compilation error:", error);
+          setWeatherData((prev) => {
+            if (!prev || prev.city.id !== city.id) return prev;
+            return {
+              ...prev,
+              loadingRecommendations: false,
+              recommendationsError: "Local recommendations failed to calculate.",
+            };
+          });
+        }
+      }, 500);
 
     } catch (error: any) {
       console.error("Fetch weather error:", error);
       setWeatherError(error.message || "Failed to retrieve local weather.");
     } finally {
       setLoadingWeather(false);
-    }
-  };
-
-  const fetchRecommendations = async (city: City, current: CurrentWeather, daily: ForecastDay[]) => {
-    try {
-      const response = await fetch("/api/recommendations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ city, current, daily }),
-      });
-
-      if (!response.ok) {
-        throw new Error("API server failed to process AI recommendations.");
-      }
-
-      const recommendationsData = await response.json();
-      
-      setWeatherData((prev) => {
-        if (!prev || prev.city.id !== city.id) return prev;
-        return {
-          ...prev,
-          recommendations: recommendationsData,
-          loadingRecommendations: false,
-        };
-      });
-    } catch (error: any) {
-      console.error("Fetch recommendations error:", error);
-      setWeatherData((prev) => {
-        if (!prev || prev.city.id !== city.id) return prev;
-        return {
-          ...prev,
-          loadingRecommendations: false,
-          recommendationsError: error.message || "AI Planning failed to compile.",
-        };
-      });
     }
   };
 
@@ -259,7 +245,7 @@ export default function App() {
                   <ForecastDisplay daily={weatherData.daily} />
                 </div>
 
-                {/* Right Panel: AI Planning Recommendations (5 columns) */}
+                {/* Right Panel: Planning Recommendations (5 columns) */}
                 <div className="lg:col-span-5 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-3xl border border-zinc-200/50 dark:border-zinc-800/40 p-6 shadow-xl relative overflow-hidden flex flex-col">
                   
                   {/* Background overlay accent glow */}
@@ -271,10 +257,10 @@ export default function App() {
                         <Sparkles className="h-8 w-8" />
                       </div>
                       <h4 className="font-bold text-sm text-zinc-850 dark:text-zinc-200">
-                        Compiling AI Recommendations...
+                        Compiling Smart Recommendations...
                       </h4>
                       <p className="text-xs text-zinc-400 dark:placeholder-zinc-500 max-w-xs mt-2 leading-relaxed">
-                        Gemini is digesting temperature differentials, storm risk codes, and precipitation maps to construct apparel lists and activities...
+                        Analyzing local temperature thresholds, storm risk indices, and weekly precipitation maps to construct custom apparel and active schedules...
                       </p>
                     </div>
                   ) : weatherData.recommendationsError ? (
@@ -283,21 +269,11 @@ export default function App() {
                         <HelpCircle className="h-6 w-6" />
                       </div>
                       <h4 className="font-bold text-sm text-zinc-800 dark:text-zinc-200">
-                        Unable to Reach AI Engine
+                        Unable to Compile Rules
                       </h4>
                       <p className="text-xs text-zinc-400 dark:placeholder-zinc-500 max-w-xs mt-1.5 mb-5 leading-normal">
                         {weatherData.recommendationsError}
                       </p>
-                      <button
-                        id="retry-recommendations-button"
-                        onClick={() => {
-                          setWeatherData((prev) => prev ? { ...prev, loadingRecommendations: true, recommendationsError: null } : null);
-                          fetchRecommendations(weatherData.city, weatherData.current, weatherData.daily);
-                        }}
-                        className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold border border-zinc-200/40 dark:border-zinc-700/40 hover:bg-zinc-150 dark:hover:bg-zinc-750 transition-colors"
-                      >
-                        Retry AI Query
-                      </button>
                     </div>
                   ) : weatherData.recommendations ? (
                     <RecommendationsDisplay 
@@ -314,12 +290,12 @@ export default function App() {
           </AnimatePresence>
         </main>
         
-        {/* Humid/Warm minimal credit bar */}
+        {/* Minimal credit bar */}
         <footer id="app-footer" className="text-center py-4 border-t border-white/10 dark:border-zinc-850/20">
           <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest flex items-center justify-center gap-1">
             <span>Powered by Open-Meteo Satellite data</span>
             <span className="opacity-50">•</span>
-            <span>Gemini Neural Intel</span>
+            <span>Local Rules Intelligence</span>
           </p>
         </footer>
 

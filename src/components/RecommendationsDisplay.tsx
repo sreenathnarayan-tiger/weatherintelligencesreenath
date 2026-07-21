@@ -39,7 +39,7 @@ export default function RecommendationsDisplay({ recommendations, cityName }: Re
           </div>
           <div>
             <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
-              AI Planning Intelligence
+              Smart Planning Intelligence
             </h3>
             <p className="text-xs text-zinc-400 dark:placeholder-zinc-500 font-medium">
               Tailored weather schedules for {cityName}
